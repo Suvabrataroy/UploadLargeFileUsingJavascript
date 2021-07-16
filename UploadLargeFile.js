@@ -1,24 +1,24 @@
 /* Author : Suvabrata Roy
    Email  : suvabrataroy@gmail.com */
 
-function UploadLargeFile(file, callback, PostURL) {
+function UploadLargeFile(file, callback, PostURL, SucessFunc) {
     var fileSize = file.size;
     var chunkSize = 1 * 1024 * 1024; // bytes
     var offset = 0;
     var BOF = 0;
-    var self = this; // reference purpose
+    var self = this; // we need a reference to the current object
     var FileReadInBlocks = null;
 
     var readEventHandler = function(evt) {
-        if (evt.target.error == null) {
-            offset += evt.target.result.length;
+        if (evt.target.error == null) {            
             callback(evt.target.result, BOF, function() {
                 if (offset >= fileSize) {
-                    console.log("Done reading file");
-                    //console.log(new Date());
+					//FileReadInBlocks(offset, fileSize-offset, file)
+                    console.log("Done reading file"); 
                     return;
                 }
                 FileReadInBlocks(offset, chunkSize, file)
+				offset += chunkSize;
             }, PostURL);
 
             BOF = offset;
@@ -28,6 +28,7 @@ function UploadLargeFile(file, callback, PostURL) {
         }
 
         if (offset >= fileSize) {
+            SucessFunc();
             console.log("Done reading file");
             //console.log(new Date());
             return;
@@ -43,6 +44,7 @@ function UploadLargeFile(file, callback, PostURL) {
     }
     // now let's start the read with the first block
     FileReadInBlocks(offset, chunkSize, file);
+	offset += chunkSize;
 }
 
 
@@ -57,12 +59,10 @@ function AsyncUpload(data, fileposition, seekNext, PostURL) {
     xhttp.open("POST", PostURL, true);
     xhttp.setRequestHeader("Content-type", "application/json; charset=utf-8");
     xhttp.send(JSON.stringify({
-        Data: data,
+        FileData: data,
         OffSet: fileposition
     }));
-
 }
-
 
 //Usage 
 /*
